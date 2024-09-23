@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Portfolio Optimization</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+
+<body>
+    <div class="container">
+        <h1>Quantum Portfolio Optimization</h1>
+        <p>Optimizing a portfolio is a challenging problem due to complex asset interactions and risk factors. Traditional methods often fall short in balancing returns and risks. Quantum computing offers a potential advantage by efficiently exploring vast solution spaces, allowing for more effective portfolio allocations and enhancing decision-making in finance.</p>
+        <!-- <div class="template-download">
+            <p>
+                Please download the template to upload your stock data: 
+                <a href="{{ url_for('static', filename='template.xlsx') }}" download="template.xlxs">Download Excel Template</a>
+            </p>
+        </div> -->
+        <form id="uploadForm">
+            <div class="file-upload">
+                <h2 for="stockFile">Upload your stock:</h2>
+                <p class="temp">
+                    Please download the template to upload your stock data: 
+                    <a href="{{ url_for('static', filename='template.xlsx') }}" download="template.xlxs">Excel Template</a>
+                </p>
+                <input type="file" id="stockFile" name="file" accept=".xlsx" required>
+            </div>
+            <button type="submit" class="btn">Upload</button>
+        </form>
+
+        <div class="message" id="message"></div>
+
+        <div class="stock-info">
+            <h2>Uploaded Stock Data (Top 5 Rows):</h2>
+            <table id="stockTable" style="display:none;">
+                <thead id="tableHeader"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="quantum-optimization">
+            <h2>Quantum Optimization</h2>
+            <div id="optimization-input">
+            <form id="optimizationForm">
+                <label for="budget">Budget:</label>
+                <input type="number" id="budget" value="1000"><br>
+
+                <label for="max_risk">Max Risk:</label>
+                <input type="number" id="max_risk" value="0"><br>
+
+                <label for="min_return">Min Return:</label>
+                <input type="number" id="min_return" value="0"><br>
+
+                <div class="multi-select">
+                    <label>Select Stocks:</label>
+                    <div class="checkbox-container" id="checkboxContainer">
+                        <!-- <div class="checkbox" data-value="AAPL">AAPL</div>
+                        <div class="checkbox" data-value="MSFT">MSFT</div>
+                        <div class="checkbox" data-value="AAL">AAL</div>
+                        <div class="checkbox" data-value="WMT">WMT</div> -->
+                    </div>
+                </div>
+
+                <button type="button" class="btn" id="optimizeButton">Optimize Portfolio</button>
+            </form>
+        </div>
+
+            <!-- <h2>Results:</h2> -->
+            <!-- <pre id="results"></pre> -->
+            
+            <div id="resultsContainer">
+                <h2>Optimization Results</h2>
+                <div id="spinner" class="spinner" style="display: none;"></div>
+                <table id="resultsTable" style="display:none;">
+                    <thead id="resultsHeader"></thead>
+                    <tbody id="resultsBody"></tbody>
+                </table>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            let fileInput = document.getElementById('stockFile');
+            let formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            fetch('http://127.0.0.1:5000/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('message').textContent = data.message || 'File uploaded successfully';
+
+                    // Fetch the first 5 rows of stock data
+                    fetch('http://127.0.0.1:5000/get_stock_data')
+                        .then(response => response.json())
+                        .then(stockData => {
+                            if (stockData && stockData.columns && stockData.data.length > 0) {
+                                let tableHeader = document.getElementById('tableHeader');
+                                let tableBody = document.getElementById('tableBody');
+                                let checkboxContainer = document.getElementById('checkboxContainer');
+
+                                // Clear existing table content
+                                tableHeader.innerHTML = '';
+                                tableBody.innerHTML = '';
+                                checkboxContainer.innerHTML = '';
+
+                                const uniqueStocks = stockData.columns.slice(1)
+                                // [...new Set(stockData.data.map(row => row[0]))];
+                                // Create table headers
+                                let headerRow = '<tr>';
+                                stockData.columns.forEach(col => {
+                                    headerRow += `<th>${col}</th>`;
+                                });
+                                headerRow += '</tr>';
+                                tableHeader.innerHTML = headerRow;
+
+                                // Create table rows for stock data
+                                stockData.data.forEach(row => {
+                                    let rowHtml = '<tr>';
+                                    row.forEach(cell => {
+                                        rowHtml += `<td>${cell}</td>`;
+                                    });
+                                    rowHtml += '</tr>';
+                                    tableBody.innerHTML += rowHtml;
+                                });
+                                uniqueStocks.forEach(stock => {
+                                    // Create a new div element for the checkbox
+                                    const checkboxDiv = document.createElement('div');
+                                    checkboxDiv.className = 'checkbox';
+
+                                    // Set the inner HTML for the checkbox
+                                    checkboxDiv.innerHTML = `
+                                        <input type="checkbox" id="${stock}" value="${stock}">
+                                        <label for="${stock}">${stock}</label>
+                                    `;
+
+                                    // Append the new checkbox div to the checkboxContainer
+                                    checkboxContainer.appendChild(checkboxDiv);
+
+                                    // Add event listener for click
+                                    checkboxDiv.addEventListener('click', () => {
+                                        event.stopPropagation();
+
+                                        // Toggle the checked state of the checkbox
+                                        const checkboxInput = checkboxDiv.querySelector('input[type="checkbox"]');
+                                        checkboxInput.checked = !checkboxInput.checked; // Toggle the checkbox state
+
+                                        // Optionally toggle the selected class for styling
+                                        checkboxDiv.classList.toggle('selected', checkboxInput.checked);
+                                    });
+                                });
+                                document.getElementById('stockTable').style.display = 'table';
+                            }
+                        })
+                        .catch(err => console.error('Error fetching stock data:', err));
+                })
+                .catch(err => {
+                    document.getElementById('message').textContent = 'Error uploading file';
+                    console.error('Upload error:', err);
+                });
+        });
+
+
+        document.getElementById('optimizeButton').addEventListener('click', async () => {
+            const budget = parseInt(document.getElementById('budget').value);
+            const max_risk = parseFloat(document.getElementById('max_risk').value);
+            const min_return = parseFloat(document.getElementById('min_return').value);
+            // Show the spinner
+            const spinner = document.getElementById('spinner');
+            spinner.style.display = 'block';
+            // Fetch all checkboxes directly from the container
+            const checkboxes = document.querySelectorAll('#checkboxContainer input[type="checkbox"]');
+
+            // Get selected stocks
+            const selectedStocks = Array.from(checkboxes)
+                .filter(checkbox => checkbox.checked) // Check if checkbox is checked
+                .map(checkbox => checkbox.value); // Get the value of the checked checkbox
+            console.log(selectedStocks);
+
+            const requestData = {
+                budget: budget,
+                max_risk: max_risk,
+                min_return: min_return,
+                stocks: selectedStocks,
+                // "stocks": ["AAPL", "MSFT", "AAL", "WMT"],
+                // "budget": 1000,
+                "bin_size": 10,
+                "gamma": null,
+                "file_path": "data/stock_data.csv",
+                "dates": null,
+                // "max_risk":0,
+                // "min_return":0,
+                "model_type": "CQM",
+                "alpha": 0.005,
+                "baseline": "^GSPC",
+                "sampler_args": null,
+                "t_cost": 0.01,
+                "verbose": true,
+                "num": 0
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/optimize_portfolio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData),
+                });
+                const result = await response.json();
+                // document.getElementById('message').textContent = result.message;
+
+        // Show results in table format
+        const resultsTable = document.getElementById('resultsTable');
+        const resultsHeader = document.getElementById('resultsHeader');
+        const resultsBody = document.getElementById('resultsBody');
+
+        // Clear any existing content
+        resultsHeader.innerHTML = '';
+        resultsBody.innerHTML = '';
+
+        // Create headers for the table
+        const headers = ['Stock', 'Units', 'Investment Ratio (%)'];
+        let headerRow = '<tr>';
+        headers.forEach(header => {
+            headerRow += `<th>${header}</th>`;
+        });
+        headerRow += '</tr>';
+        resultsHeader.innerHTML = headerRow;
+
+        // Populate rows with stock data
+        const stockData = result.result.Stocks;
+        const investmentRatios = result.result['Investment Ratio'];
+        for (const stock in stockData) {
+            const rowHtml = `<tr>
+                                <td>${stock}</td>
+                                <td>${stockData[stock]}</td>
+                                <td>${investmentRatios[stock].toFixed(2)}%</td>
+                             </tr>`;
+            resultsBody.innerHTML += rowHtml;
+        }
+
+        // Show additional metrics below the table
+        const additionalMetricsHtml = `
+             <tr><td colspan="3"><strong>Model Type:</strong> ${result.result['Model Type']}</td></tr>
+            <tr><td colspan="3"><strong>Estimated Returns:</strong> ${result.result['Estimated Returns']}%</td></tr>
+            <tr><td colspan="3"><strong>Purchase Cost:</strong> $${result.result['Purchase Cost'].toFixed(2)}</td></tr>
+            <tr><td colspan="3"><strong>Variance:</strong> ${result.result['Risk']}</td></tr> 
+        `;
+        resultsBody.innerHTML += additionalMetricsHtml;
+
+        // Make the table visible
+        resultsTable.style.display = 'table';
+                // document.getElementById('results').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').textContent = 'Error: ' + error.message;
+            } finally {
+                // Hide the spinner after the operation is complete
+                spinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>
