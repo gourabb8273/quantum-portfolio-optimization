@@ -4,9 +4,10 @@ from api.list import list_bp
 from api.fetch import fetch_bp
 from api.portfolio import portfolio_bp
 
+from flask_cors import CORS
 # Initialize Flask app
 app = Flask(__name__)
-
+CORS(app, resources={r"/*": {"origins": "*"}})
 # Route to serve the HTML page
 @app.route('/')
 def index():

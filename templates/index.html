@@ -86,12 +86,13 @@
     <script>
         document.getElementById('uploadForm').addEventListener('submit', function (e) {
             e.preventDefault();
-
+            URL = 'https://quantum-portfolio-optimization.onrender.com'
+            // 'http://127.0.0.1:5000/
             let fileInput = document.getElementById('stockFile');
             let formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
-            fetch('http://127.0.0.1:5000/upload', {
+            fetch(`${URL}/upload`, {
                 method: 'POST',
                 body: formData
             })
@@ -100,7 +101,7 @@
                     document.getElementById('message').textContent = data.message || 'File uploaded successfully';
 
                     // Fetch the first 5 rows of stock data
-                    fetch('http://127.0.0.1:5000/get_stock_data')
+                    fetch(`${URL}/get_stock_data`)
                         .then(response => response.json())
                         .then(stockData => {
                             if (stockData && stockData.columns && stockData.data.length > 0) {
@@ -209,7 +210,7 @@
             };
 
             try {
-                const response = await fetch('http://127.0.0.1:5000/optimize_portfolio', {
+                const response = await fetch(`${URL}/optimize_portfolio`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
