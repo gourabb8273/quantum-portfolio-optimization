@@ -18,5 +18,5 @@ app.register_blueprint(list_bp)    # Register list API
 app.register_blueprint(fetch_bp)
 app.register_blueprint(portfolio_bp)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
