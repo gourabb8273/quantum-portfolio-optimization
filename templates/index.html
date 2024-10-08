@@ -78,6 +78,7 @@
                     <thead id="resultsHeader"></thead>
                     <tbody id="resultsBody"></tbody>
                 </table>
+                 <div id="message" style="display: none;"></div>
             </div>
             
         </div>
@@ -242,14 +243,26 @@
         // Populate rows with stock data
         const stockData = result.result && result.result.Stocks;
 
-        if (!stockData || Object.keys(stockData).length === 0) {
-            debugger
-        // If stockData is undefined or empty
-        resultsBody.innerHTML = `<h3>No solution found! Please modify parameters such as budget, risk, and return to get an optimum solution.</h3>`;
-        spinner.style.display = 'none';
-        resultsTable.style.display = 'none'; // Hide the results table
-        return; // Exit the function early
-    }
+         if (!stockData || Object.keys(stockData).length === 0) {
+            // If stockData is undefined or empty
+            const messageHtml = `<h4>No solution found! Please modify parameters such as budget, risk, and return to get an optimum solution.</h4>`;
+            
+            // Clear existing content
+            resultsHeader.innerHTML = '';
+            resultsBody.innerHTML = '';
+
+            // Hide the results table
+            resultsTable.style.display = 'none';
+
+            // Show the message
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = messageHtml; // Set the message
+            messageDiv.style.display = 'block'; // Show the message div
+
+            // Hide the spinner
+            spinner.style.display = 'none'; // Hide the spinner
+            return; // Exit the function early
+        }
         const investmentRatios = result.result['Investment Ratio'];
         for (const stock in stockData) {
             const rowHtml = `<tr>
