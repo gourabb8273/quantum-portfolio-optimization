@@ -240,7 +240,8 @@
         resultsHeader.innerHTML = headerRow;
 
         // Populate rows with stock data
-        const stockData = result.result.Stocks;
+        const stockData = result.result && result.result.Stocks;
+        console.log("stockData",stockData)
         const investmentRatios = result.result['Investment Ratio'];
         for (const stock in stockData) {
             const rowHtml = `<tr>
