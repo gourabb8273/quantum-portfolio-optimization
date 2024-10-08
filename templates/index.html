@@ -243,7 +243,8 @@
         const stockData = result.result && result.result.Stocks;
         if (!stockData || Object.keys(stockData).length === 0) {
         // If stockData is undefined or empty
-        messageElement.textContent = 'No solution found! Please modify parameters such as budget, risk, and return to get an optimum solution.';
+        resultsBody.innerHTML = `<h3>No solution found! Please modify parameters such as budget, risk, and return to get an optimum solution.</h3>`;
+        spinner.style.display = 'none';
         resultsTable.style.display = 'none'; // Hide the results table
         return; // Exit the function early
     }
