@@ -78,7 +78,7 @@
                     <thead id="resultsHeader"></thead>
                     <tbody id="resultsBody"></tbody>
                 </table>
-                 <div id="message" style="display: none;"></div>
+                 <div id="message-nosolution" style="display: none;"></div>
             </div>
             
         </div>
@@ -255,7 +255,7 @@
             resultsTable.style.display = 'none';
 
             // Show the message
-            const messageDiv = document.getElementById('message');
+            const messageDiv = document.getElementById('message-nosolution');
             messageDiv.innerHTML = messageHtml; // Set the message
             messageDiv.style.display = 'block'; // Show the message div
 
