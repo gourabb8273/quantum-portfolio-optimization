@@ -241,7 +241,9 @@
 
         // Populate rows with stock data
         const stockData = result.result && result.result.Stocks;
+
         if (!stockData || Object.keys(stockData).length === 0) {
+            debugger
         // If stockData is undefined or empty
         resultsBody.innerHTML = `<h3>No solution found! Please modify parameters such as budget, risk, and return to get an optimum solution.</h3>`;
         spinner.style.display = 'none';
