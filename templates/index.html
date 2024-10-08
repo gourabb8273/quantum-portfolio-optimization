@@ -242,36 +242,44 @@
         // Populate rows with stock data
         const stockData = result.result && result.result.Stocks;
         console.log("stockData",stockData)
-        const investmentRatios = result.result['Investment Ratio'];
-        for (const stock in stockData) {
-            const rowHtml = `<tr>
-                                <td>${stock}</td>
-                                <td>${stockData[stock]}</td>
-                                <td>${investmentRatios[stock].toFixed(2)}%</td>
-                             </tr>`;
-            resultsBody.innerHTML += rowHtml;
-        }
-
-        // Show additional metrics below the table
-        const additionalMetricsHtml = `
-             <tr><td colspan="3"><strong>Model Type:</strong> ${result.result['Model Type']}</td></tr>
-            <tr><td colspan="3"><strong>Estimated Returns:</strong> ${result.result['Estimated Returns']}%</td></tr>
-            <tr><td colspan="3"><strong>Purchase Cost:</strong> $${result.result['Purchase Cost'].toFixed(2)}</td></tr>
-            <tr><td colspan="3"><strong>Variance:</strong> ${result.result['Risk']}</td></tr> 
-        `;
-        resultsBody.innerHTML += additionalMetricsHtml;
-
-        // Make the table visible
-        resultsTable.style.display = 'table';
-                // document.getElementById('results').textContent = JSON.stringify(result, null, 2);
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('results').textContent = 'Error: ' + error.message;
-            } finally {
-                // Hide the spinner after the operation is complete
-                spinner.style.display = 'none';
+        if(stockData) {
+            const investmentRatios = result.result['Investment Ratio'];
+            for (const stock in stockData) {
+                const rowHtml = `<tr>
+                                    <td>${stock}</td>
+                                    <td>${stockData[stock]}</td>
+                                    <td>${investmentRatios[stock].toFixed(2)}%</td>
+                                 </tr>`;
+                resultsBody.innerHTML += rowHtml;
             }
-        });
+    
+            // Show additional metrics below the table
+            const additionalMetricsHtml = `
+                 <tr><td colspan="3"><strong>Model Type:</strong> ${result.result['Model Type']}</td></tr>
+                <tr><td colspan="3"><strong>Estimated Returns:</strong> ${result.result['Estimated Returns']}%</td></tr>
+                <tr><td colspan="3"><strong>Purchase Cost:</strong> $${result.result['Purchase Cost'].toFixed(2)}</td></tr>
+                <tr><td colspan="3"><strong>Variance:</strong> ${result.result['Risk']}</td></tr> 
+            `;
+            resultsBody.innerHTML += additionalMetricsHtml;
+    
+            // Make the table visible
+            resultsTable.style.display = 'table';
+                    // document.getElementById('results').textContent = JSON.stringify(result, null, 2);
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('results').textContent = 'Error: ' + error.message;
+                } finally {
+                    // Hide the spinner after the operation is complete
+                    spinner.style.display = 'none';
+                }
+            });
+        }
+        else {
+             resultsBody.innerHTML += ` <h3>No solution found! Please adjust the parameter e.g. return risk and budget to get an optimum solution</h3>`;
+             spinner.style.display = 'none';
+        }
+        
+        
     </script>
 </body>
 
